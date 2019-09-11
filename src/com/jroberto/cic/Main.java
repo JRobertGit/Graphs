@@ -15,8 +15,8 @@ public class Main {
         GraphGenerator.genGeographic(30, 0.15, true, false).toCsv("Geographic30");
         GraphGenerator.genGeographic(100, 0.15, true, false).toCsv("Geographic100");
         GraphGenerator.genGeographic(500, 0.15, true, false).toCsv("Geographic500");
-        GraphGenerator.genBarabasiAlbert(30, 1, true, false).toCsv("BarabasiAlbert30");
-        GraphGenerator.genBarabasiAlbert(100, 1, true, false).toCsv("BarabasiAlbert100");
-        GraphGenerator.genBarabasiAlbert(500, 1, true, false).toCsv("BarabasiAlbert500");
+        GraphGenerator.genBarabasiAlbert(30, 2, true, false).toCsv("BarabasiAlbert30");
+        GraphGenerator.genBarabasiAlbert(100, 3, true, false).toCsv("BarabasiAlbert100");
+        GraphGenerator.genBarabasiAlbert(500, 6, true, false).toCsv("BarabasiAlbert500");
     }
 }

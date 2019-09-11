@@ -1,9 +1,6 @@
 package com.jroberto.cic;
 
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 public class GraphGenerator {
     public static Graph genGilbert(int n, double p, boolean isDirected, boolean auto) {
@@ -14,7 +11,8 @@ public class GraphGenerator {
         }
 
         HashMap<String, Boolean> edges = new HashMap<>();
-        Set<Vertex<Integer>> nodes = graph.getAdjacencyMap().keySet();
+        ArrayList<Vertex<Integer>> nodes = new ArrayList<>(graph.getAdjacencyMap().keySet());
+        Collections.shuffle(nodes);
 
         for (Vertex v1: nodes) {
             for (Vertex v2: nodes) {
@@ -79,7 +77,8 @@ public class GraphGenerator {
             graph.addVertex(newVertex);
         }
 
-        Set<Vertex<Vector<Double>>> nodes = graph.getAdjacencyMap().keySet();
+        ArrayList<Vertex<Vector<Double>>> nodes = new ArrayList<>(graph.getAdjacencyMap().keySet());
+        Collections.shuffle(nodes);
         for (Vertex<Vector<Double>> v1: nodes) {
             for (Vertex<Vector<Double>> v2: nodes) {
                 if (!v1.equals(v2) || auto ) {
@@ -103,9 +102,10 @@ public class GraphGenerator {
 
             int size = graph.getAdjacencyMap().size();
             HashMap<String, Boolean> edges = new HashMap<>();
-            Set<Vertex<Double>> nodes = graph.getAdjacencyMap().keySet();
+            ArrayList<Vertex<Double>> nodes = new ArrayList<>(graph.getAdjacencyMap().keySet());
+            Collections.shuffle(nodes);
 
-            if (i <= d) {
+            if (i < d) {
                 for (Vertex<Double> v2: nodes) {
                     if (!newVertex.equals(v2) || auto) {
                         String key = newVertex.getLabel() + "-" + v2.getLabel();
@@ -122,26 +122,21 @@ public class GraphGenerator {
                 }
             }
             else {
-                int grade = graph.getVertexGrade(newVertex.getLabel());
+                int count = 0;
+                for (Vertex<Double> v1: nodes) {
+                    String key = newVertex.getLabel() + "-" + v1.getLabel();
 
-                while (grade < d) {
-                    for (Vertex<Double> v2: nodes) {
-                        String key = newVertex.getLabel() + "-" + v2.getLabel();
+                    if (!edges.containsKey(key) && (!newVertex.equals(v1) || auto)) {
+                        double p = 1.0 - (double) (graph.getVertexGrade(v1.getLabel())) / d;
+                        double sample = Math.random();
 
-                        if (!edges.containsKey(key) && (!newVertex.equals(v2) || auto)) {
-                            double p = (double) graph.getVertexGrade(v2.getLabel()) / (double)size;
-                            double sample = Math.random();
-
-                            if (sample <= p) {
-                                addEdge(graph, newVertex.getLabel(), v2.getLabel(), isDirected);
-                                edges.putIfAbsent(key, true);
-
-                                if (!isDirected) {
-                                    edges.putIfAbsent(v2.getLabel() + "-" + newVertex.getLabel(), true);
-                                }
-
-                                grade = graph.getVertexGrade(newVertex.getLabel());
+                        if (sample <= p) {
+                            addEdge(graph, v1.getLabel(), newVertex.getLabel(), isDirected);
+                            edges.putIfAbsent(key, true);
+                            if (!isDirected) {
+                                edges.putIfAbsent(v1.getLabel() + "-" + newVertex.getLabel(), true);
                             }
+                            if (++count >= d) break;
                         }
                     }
                 }
