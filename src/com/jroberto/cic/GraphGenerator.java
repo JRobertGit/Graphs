@@ -11,20 +11,20 @@ public class GraphGenerator {
         }
 
         HashMap<String, Boolean> edges = new HashMap<>();
-        ArrayList<Vertex<Integer>> nodes = new ArrayList<>(graph.getAdjacencyMap().keySet());
-        Collections.shuffle(nodes);
+        ArrayList<String> nodesIds = new ArrayList<>(graph.getAdjacencyMap().keySet());
+        Collections.shuffle(nodesIds);
 
-        for (Vertex v1: nodes) {
-            for (Vertex v2: nodes) {
+        for (String v1: nodesIds) {
+            for (String v2: nodesIds) {
                 if (!v1.equals(v2) || auto ) {
                     double pij = Math.random();
                     if (pij <= p) {
-                        String key = v1.getLabel() + "-" + v2.getLabel();
+                        String key = v1 + "-" + v2;
                         if (!edges.containsKey(key)) {
-                            addEdge(graph, v1.getLabel(), v2.getLabel(), isDirected);
+                            addEdge(graph, v1, v2, isDirected);
                             edges.putIfAbsent(key, true);
                             if (!isDirected) {
-                                edges.putIfAbsent(v2.getLabel() + "-" + v1.getLabel(), true);
+                                edges.putIfAbsent(v2 + "-" + v1, true);
                             }
                         }
                     }
@@ -77,14 +77,16 @@ public class GraphGenerator {
             graph.addVertex(newVertex);
         }
 
-        ArrayList<Vertex<Vector<Double>>> nodes = new ArrayList<>(graph.getAdjacencyMap().keySet());
-        Collections.shuffle(nodes);
-        for (Vertex<Vector<Double>> v1: nodes) {
-            for (Vertex<Vector<Double>> v2: nodes) {
-                if (!v1.equals(v2) || auto ) {
-                    double distance = Math.sqrt(Math.pow(v1.getData().get(0) - v2.getData().get(0), 2.0) + Math.pow(v1.getData().get(1) - v2.getData().get(1), 2.0));
+        ArrayList<String> nodesIds = new ArrayList<>(graph.getAdjacencyMap().keySet());
+        Collections.shuffle(nodesIds);
+        for (String id1: nodesIds) {
+            for (String id2: nodesIds) {
+                if (!id1.equals(id2) || auto ) {
+                    Vector<Double> v1 = graph.getVertex(id1).getData();
+                    Vector<Double> v2 = graph.getVertex(id2).getData();
+                    double distance = Math.sqrt(Math.pow(v1.get(0) - v2.get(0), 2.0) + Math.pow(v1.get(1) - v2.get(1), 2.0));
                     if (distance <= r) {
-                        addEdge(graph, v1.getLabel(), v2.getLabel(), isDirected);
+                        addEdge(graph, id1, id2, isDirected);
                     }
                 }
             }
@@ -102,47 +104,34 @@ public class GraphGenerator {
 
             int size = graph.getAdjacencyMap().size();
             HashMap<String, Boolean> edges = new HashMap<>();
-            ArrayList<Vertex<Double>> nodes = new ArrayList<>(graph.getAdjacencyMap().keySet());
-            Collections.shuffle(nodes);
+            ArrayList<String> nodesIds = new ArrayList<>(graph.getAdjacencyMap().keySet());
+            Collections.shuffle(nodesIds);
 
-            if (i < d) {
-                for (Vertex<Double> v2: nodes) {
-                    if (!newVertex.equals(v2) || auto) {
-                        String key = newVertex.getLabel() + "-" + v2.getLabel();
-
-                        if (!edges.containsKey(key)) {
-                            addEdge(graph, newVertex.getLabel(), v2.getLabel(), isDirected);
-                            edges.putIfAbsent(key, true);
-
-                            if (!isDirected) {
-                                edges.putIfAbsent(v2.getLabel() + "-" + newVertex.getLabel(), true);
-                            }
-                        }
-                    }
-                }
-            }
-            else {
+            for (String id: nodesIds) {
                 int count = 0;
-                for (Vertex<Double> v1: nodes) {
-                    String key = newVertex.getLabel() + "-" + v1.getLabel();
+                if ((!newVertex.getId().equals(id) || auto)) {
+                    String key = id + "-" + newVertex.getId();
+                    if (!edges.containsKey(key)) {
+                        boolean add = i < d;
+                        if (!add) {
+                            double p = 1.0 - (double) (graph.getVertexGrade(id)) / d;
+                            double sample = Math.random();
+                            add = sample <= p;
+                        }
 
-                    if (!edges.containsKey(key) && (!newVertex.equals(v1) || auto)) {
-                        double p = 1.0 - (double) (graph.getVertexGrade(v1.getLabel())) / d;
-                        double sample = Math.random();
-
-                        if (sample <= p) {
-                            addEdge(graph, v1.getLabel(), newVertex.getLabel(), isDirected);
+                        if (add) {
+                            addEdge(graph, id, newVertex.getId(), isDirected);
                             edges.putIfAbsent(key, true);
                             if (!isDirected) {
-                                edges.putIfAbsent(v1.getLabel() + "-" + newVertex.getLabel(), true);
+                                edges.putIfAbsent(newVertex.getId() + "-" + id, true);
                             }
-                            if (++count >= d) break;
                         }
+
+                        if (++count >= d) break;
                     }
                 }
             }
         }
-
         return graph;
     }
 
