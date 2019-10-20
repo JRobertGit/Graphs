@@ -5,7 +5,6 @@ public class Main {
     public static void main(String[] args) {
         // 3rd Project Tests
         Graph gilbert30 = GraphGenerator.genGilbert(30, 0.30, true, false);
-        gilbert30.toCsv("Gilbert30");
         gilbert30.generateRandomEdgeValues(1.0f, 10.0f);
         Graph djk = gilbert30.dijkstra(gilbert30.getVertex("1"));
         Graph.generateDL(djk, "Gilbert30");
