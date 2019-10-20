@@ -1,6 +1,6 @@
 # Tests
-.csv
-.dl
+*.csv
+*.dl
 
 # General
 .DS_Store
