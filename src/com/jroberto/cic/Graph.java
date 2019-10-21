@@ -46,7 +46,9 @@ public class Graph<T> {
     }
 
     public void addDirectedEdge(String fromVertexId, String toVertexId) {
-        this.vertices.get(fromVertexId).getEdges().add(new Edge(fromVertexId, toVertexId, 0));
+        Vertex fromVertex = this.getVertex(fromVertexId);
+        Vertex toVertex = this.getVertex(toVertexId);
+        this.vertices.get(fromVertexId).getEdges().add(new Edge(fromVertex, toVertex, 0));
         this.getAdjacencyList(fromVertexId).add(this.vertices.get(toVertexId));
     }
 
@@ -80,11 +82,11 @@ public class Graph<T> {
             else dist.putIfAbsent(id, Double.MAX_VALUE);
         }
 
-        queue.add(new Edge(source.getId(), source.getId(), 0d));
+        queue.add(new Edge(source, source, 0d));
 
         while(!queue.isEmpty()) {
             Edge current = queue.remove();
-            String id = current.getTo();
+            String id = current.getToId();
 
             if (visited.containsKey(id)) continue;
 
@@ -93,17 +95,17 @@ public class Graph<T> {
             tree.addVertex(v);
             visited.putIfAbsent(id, true);
 
-            if (!current.getFrom().equals(id))
-                tree.addDirectedEdge(current.getFrom(), id);
+            if (!current.getFromId().equals(id))
+                tree.addDirectedEdge(current.getFromId(), id);
 
             ArrayList<Edge> edges = v.getEdges();
             for (Edge e : edges) {
-                String toId = e.getTo();
+                String toId = e.getToId();
                 if (!visited.containsKey(toId)) {
                     double newCost = dist.get(id) + e.getCost();
                     if (newCost < dist.get(toId)) {
                         dist.put(toId, newCost);
-                        queue.add(new Edge(id, toId, newCost));
+                        queue.add(new Edge(current.getTo(), e.getTo(), newCost));
                     }
                 }
             }
@@ -112,97 +114,87 @@ public class Graph<T> {
         return tree;
     }
 
-//    // TODO: REFACTOR
-//    private Graph<T> deepFirstRecursiveTraverse() {
-//        Graph<T> dfRTree =  new Graph<>();
-//        String startKey = new Random().nextInt(this.adjacencyMap.size()) + "";
-//
-//        return this.deepFirstRecursiveTraverseAux(dfRTree, null, this.getVertex(startKey));
-//    }
-//
-//    // TODO: REFACTOR
-//    private Graph<T> deepFirstRecursiveTraverseAux(Graph<T> gTree, Vertex<T> parent, Vertex<T> current) {
-//        if (!gTree.vertexExists(current)) {
-//            gTree.addVertex(current);
-//
-//            if (parent != null) {
-//                gTree.addDirectedEdge(parent.getId(), current.getId());
-//            }
-//
-//            ArrayList<Vertex<T>> list = this.getAdjacencyList(current.getId());
-//            for (Vertex<T> v : list) {
-//                if (!gTree.vertexExists(v)) {
-//                    gTree = this.deepFirstRecursiveTraverseAux(gTree, current, v);
-//                }
-//            }
-//        }
-//
-//        return gTree;
-//    }
-//
-//    // TODO: REFACTOR
-//    private Graph<T> deepFirstTraverse() {
-//        Graph<T> dfsTree =  new Graph<>();
-//        String startKey = new Random().nextInt(this.adjacencyMap.size()) + "";
-//
-//        Stack<Vertex<T>> pendingVertexes =  new Stack<>();
-//        Stack<Vertex<T>> currentParent =  new Stack<>();
-//
-//        pendingVertexes.push(this.getVertex(startKey));
-//
-//        while (!pendingVertexes.empty()) {
-//            Vertex<T> current = pendingVertexes.peek();
-//            if (!dfsTree.vertexExists(current)) {
-//                dfsTree.addVertex(current);
-//                if (!currentParent.empty()) {
-//                    dfsTree.addDirectedEdge(currentParent.peek().getId(), current.getId());
-//                }
-//
-//                ArrayList<Vertex<T>> list = this.getAdjacencyList(current.getId());
-//                for (Vertex<T> v : list) {
-//                    if (!dfsTree.vertexExists(v)) {
-//                        pendingVertexes.push(v);
-//                    }
-//                }
-//
-//                currentParent.push(current);
-//            } else {
-//                current = pendingVertexes.pop();
-//                if (!currentParent.empty() && current.equals(currentParent.peek())) {
-//                    currentParent.pop();
-//                }
-//            }
-//        }
-//
-//        return dfsTree;
-//    }
-//
-//    // TODO: REFACTOR
-//    private Graph<T> breadthFirstTraverse() {
-//        Graph<T> bfsTree =  new Graph<>();
-//        String startKey = new Random().nextInt(this.adjacencyMap.size()) + "";
-//
-//        Deque<Vertex<T>> queue =  new LinkedList<>();
-//        queue.add(this.getVertex(startKey));
-//
-//        while (!queue.isEmpty()) {
-//            Vertex<T> current = queue.remove();
-//            bfsTree.addVertex(current);
-//
-//            ArrayList<Vertex<T>> list = this.getAdjacencyList(current.getId());
-//            for (Vertex<T> v : list) {
-//                if (!bfsTree.vertexExists(v)) {
-//                    queue.add(v);
-//                    bfsTree.addVertex(v);
-//                    bfsTree.addDirectedEdge(current.getId(), v.getId());
-//                }
-//            }
-//        }
-//
-//        return bfsTree;
-//    }
+    public static Graph DFS_R(Vertex source) {
+        Graph dfRTree =  new Graph<>();
+
+        return Graph.DFS_RAux(dfRTree, null, source);
+    }
+
+    private static Graph DFS_RAux(Graph gTree, Vertex parent, Vertex current) {
+        if (!gTree.vertexExists(current.getId())) {
+            gTree.addVertex(new Vertex(current.getId()));
+
+            if (parent != null) {
+                gTree.addDirectedEdge(parent.getId(), current.getId());
+            }
+
+            ArrayList<Edge> edges = current.getEdges();
+            for (Edge e : edges) {
+                if (!gTree.vertexExists(e.getToId())) {
+                    gTree = Graph.DFS_RAux(gTree, current, e.getTo());
+                }
+            }
+        }
+
+        return gTree;
+    }
 
 
+    public static Graph DFS_I(Vertex source) {
+        Graph dfsTree =  new Graph<>();
+
+        Stack<Vertex> pendingVertexes =  new Stack<>();
+        Stack<Vertex> currentParent =  new Stack<>();
+
+        pendingVertexes.push(source);
+
+        while (!pendingVertexes.empty()) {
+            Vertex current = pendingVertexes.peek();
+            if (!dfsTree.vertexExists(current.getId())) {
+                dfsTree.addVertex(new Vertex(current.getId()));
+                if (!currentParent.empty()) {
+                    dfsTree.addDirectedEdge(currentParent.peek().getId(), current.getId());
+                }
+
+                ArrayList<Edge> edges = current.getEdges();
+                for (Edge e : edges) {
+                    if (!dfsTree.vertexExists(e.getToId())) {
+                        pendingVertexes.push(e.getTo());
+                    }
+                }
+
+                currentParent.push(current);
+            } else {
+                current = pendingVertexes.pop();
+                if (!currentParent.empty() && current.equals(currentParent.peek())) {
+                    currentParent.pop();
+                }
+            }
+        }
+        return dfsTree;
+    }
+
+    public static Graph BFS(Vertex source) {
+        Graph bfsTree =  new Graph<>();
+
+        Deque<Vertex> queue =  new LinkedList<>();
+        queue.add(source);
+
+        while (!queue.isEmpty()) {
+            Vertex current = queue.remove();
+            bfsTree.addVertex(new Vertex(current.getId()));
+
+            ArrayList<Edge> edges = current.getEdges();
+            for (Edge e : edges) {
+                if (!bfsTree.vertexExists(e.getToId())) {
+                    queue.add(e.getTo());
+                    bfsTree.addVertex(new Vertex(e.getToId()));
+                    bfsTree.addDirectedEdge(current.getId(), e.getToId());
+                }
+            }
+        }
+        return bfsTree;
+    }
 
     @Override
     public String toString() {

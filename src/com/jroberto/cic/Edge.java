@@ -2,24 +2,32 @@ package com.jroberto.cic;
 
 public class Edge {
 
-    private String fromId;
+    private Vertex from;
 
-    private String toId;
+    private Vertex to;
 
     private double cost;
 
-    public Edge(String fromId, String toId, double cost) {
+    public Edge(Vertex from, Vertex to, double cost) {
         this.cost = cost;
-        this.fromId = fromId;
-        this.toId = toId;
+        this.from = from;
+        this.to = to;
     }
 
-    public String getFrom() {
-        return this.fromId;
+    public Vertex getFrom() {
+        return this.from;
     }
 
-    public String getTo() {
-        return this.toId;
+    public Vertex getTo () {
+        return this.to;
+    }
+
+    public String getFromId() {
+        return this.from.getId();
+    }
+
+    public String getToId() {
+        return this.to.getId();
     }
 
     public double getCost() {
